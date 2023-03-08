@@ -12,10 +12,16 @@ public class badPlayer : MonoBehaviour
     private Command button_S = new moveBackward();
     private Command button_A = new moveLeft();
     private Command button_D = new moveRight();
+    private float timerReplay = 0;
+    public float timerReplayTarget=0.3f;
+    public bool isReplaying = false;
+    public int replayActionCount=0;
     [SerializeField]
     public List<Command> commands = new List<Command>();
    public int currentplaceIntheList=0;
     public bool hasBeenUndoed=false;
+    private Vector3 startPos;
+
     //Command Class
     [Serializable]
     public abstract class Command
@@ -82,58 +88,97 @@ public class badPlayer : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        startPos = transform.position;   
     }
     void clearList(int _WhatPointsToStartClearing)
     {
         commands.RemoveRange(_WhatPointsToStartClearing,commands.Count-1-currentplaceIntheList);
         currentplaceIntheList=commands.Count-1;
     }
-
-    // Update is called once per frame
-    void Update()
+    void takeInput()
     {
         if (Input.GetKeyDown(KeyCode.S))
         {
             if (hasBeenUndoed == true) clearList(currentplaceIntheList);
-            commands.Add(button_S); currentplaceIntheList ++;
+            commands.Add(button_S); currentplaceIntheList++;
             button_S.Execute(transform);
             hasBeenUndoed = false;
         }
-        if (Input.GetKeyDown(KeyCode.D)) {
-            if (hasBeenUndoed == true)  clearList(currentplaceIntheList);  
-            button_D.Execute(transform); 
-            commands.Add(button_D); 
-            currentplaceIntheList ++; 
-            hasBeenUndoed = false; } 
-
-        if (Input.GetKeyDown(KeyCode.A)) {
-            if (hasBeenUndoed == true) clearList(currentplaceIntheList); 
-            button_A.Execute(transform); 
-            commands.Add(button_A);
-            currentplaceIntheList++; 
-            hasBeenUndoed = false; }
-
-        if (Input.GetKeyDown(KeyCode.W)) { 
-            if (hasBeenUndoed == true) clearList(currentplaceIntheList); 
-            button_W.Execute(transform); 
-            commands.Add(button_W);currentplaceIntheList++; 
-            hasBeenUndoed = false; }
-
-        if (commands.Count>0 && Input.GetKeyDown(KeyCode.Z))
+        if (Input.GetKeyDown(KeyCode.D))
         {
-            commands[currentplaceIntheList-1].Undo(transform);
-            currentplaceIntheList -- ;
-            hasBeenUndoed= true;
-           
+            if (hasBeenUndoed == true) clearList(currentplaceIntheList);
+            button_D.Execute(transform);
+            commands.Add(button_D);
+            currentplaceIntheList++;
+            hasBeenUndoed = false;
         }
-        if(commands.Count-1>currentplaceIntheList&&Input.GetKeyDown(KeyCode.X))
+
+        if (Input.GetKeyDown(KeyCode.A))
         {
-            
+            if (hasBeenUndoed == true) clearList(currentplaceIntheList);
+            button_A.Execute(transform);
+            commands.Add(button_A);
+            currentplaceIntheList++;
+            hasBeenUndoed = false;
+        }
+
+        if (Input.GetKeyDown(KeyCode.W))
+        {
+            if (hasBeenUndoed == true) clearList(currentplaceIntheList);
+            button_W.Execute(transform);
+            commands.Add(button_W); currentplaceIntheList++;
+            hasBeenUndoed = false;
+        }
+
+        if (commands.Count > 0 && Input.GetKeyDown(KeyCode.Z))
+        {
+            commands[currentplaceIntheList - 1].Undo(transform);
+            currentplaceIntheList--;
+            hasBeenUndoed = true;
+
+        }
+        if (commands.Count - 1 > currentplaceIntheList && Input.GetKeyDown(KeyCode.X))
+        {
+
             commands[currentplaceIntheList].Execute(transform);
             currentplaceIntheList += 1;
         }
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            transform.position = startPos;
+            isReplaying = true;
+        }
 
+    }
 
+    // Update is called once per frame
+    void Update()
+    {
+        if (isReplaying == false)
+        {
+            takeInput();
+        }
+        else if(timerReplayTarget<timerReplay)
+        {
+            Replay();
+            timerReplay = 0;
+        }
+        else
+        {
+            timerReplay += Time.deltaTime;
+        }
+    }
+
+    private void Replay()
+    {
+        if (replayActionCount < currentplaceIntheList)
+        {
+            commands[replayActionCount].Execute(transform);
+            replayActionCount++;
+        }
+        else
+        {
+            isReplaying= false;
+        }
     }
 }
