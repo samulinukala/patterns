@@ -129,6 +129,7 @@ public class badPlayer : MonoBehaviour
         }
         if(commands.Count-1>currentplaceIntheList&&Input.GetKeyDown(KeyCode.X))
         {
+            
             commands[currentplaceIntheList].Execute(transform);
             currentplaceIntheList += 1;
         }
