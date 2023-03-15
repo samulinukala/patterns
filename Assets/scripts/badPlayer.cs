@@ -22,7 +22,14 @@ public class badPlayer : MonoBehaviour
    public int currentplaceIntheList=0;
     public bool hasBeenUndoed=false;
     private Vector3 startPos;
-
+    public Stack<Command> undoStack = new Stack<Command>();
+    public Stack<Command> redoStack = new Stack<Command>();
+    public enemy enemyPrefab;
+    //score & enemies
+    [SerializeField]
+    private int Score = 0;
+    [SerializeField]
+    private int enemiesKilled = 0;
     //Command Class
     [Serializable]
     public abstract class Command
@@ -34,6 +41,7 @@ public class badPlayer : MonoBehaviour
         
         
     }
+    
     [Serializable]
     public class moveForward : Command
     {
@@ -92,6 +100,16 @@ public class badPlayer : MonoBehaviour
     {
         startPos = transform.position;   
     }
+    void addToScore(enemy _enemy)
+    {
+        this.Score += _enemy.enemyValue;
+        this.enemiesKilled++;
+        Debug.Log("score added");
+    }
+    private void Awake()
+    {
+        enemy.OnEnemyDie += addToScore;
+    }
     void clearList(int _WhatPointsToStartClearing)
     {
         commands.RemoveRange(_WhatPointsToStartClearing,commands.Count-1-currentplaceIntheList);
@@ -99,11 +117,28 @@ public class badPlayer : MonoBehaviour
     }
     void takeInput()
     {
+        if(Input.GetKey(KeyCode.Space)) 
+        {
+            GameObject go = Instantiate(enemyPrefab, UnityEngine.Random.insideUnitSphere, enemyPrefab.transform.rotation).gameObject;
+            Destroy(go, 5f);
+            GameObject go2 = Instantiate(enemyPrefab, UnityEngine.Random.insideUnitSphere, enemyPrefab.transform.rotation).gameObject;
+            Destroy(go2, 5f); GameObject go3 = Instantiate(enemyPrefab, UnityEngine.Random.insideUnitSphere, enemyPrefab.transform.rotation).gameObject;
+            Destroy(go3, 5f); GameObject go4 = Instantiate(enemyPrefab, UnityEngine.Random.insideUnitSphere, enemyPrefab.transform.rotation).gameObject;
+            Destroy(go4, 5f); GameObject go5 = Instantiate(enemyPrefab, UnityEngine.Random.insideUnitSphere, enemyPrefab.transform.rotation).gameObject;
+            Destroy(go5, 5f); GameObject go6 = Instantiate(enemyPrefab, UnityEngine.Random.insideUnitSphere, enemyPrefab.transform.rotation).gameObject;
+            Destroy(go6, 5f); GameObject go7 = Instantiate(enemyPrefab, UnityEngine.Random.insideUnitSphere, enemyPrefab.transform.rotation).gameObject;
+            Destroy(go7, 5f); GameObject go8 = Instantiate(enemyPrefab, UnityEngine.Random.insideUnitSphere, enemyPrefab.transform.rotation).gameObject;
+            Destroy(go8, 5f); GameObject go9 = Instantiate(enemyPrefab, UnityEngine.Random.insideUnitSphere, enemyPrefab.transform.rotation).gameObject;
+            Destroy(go9, 5f); GameObject go11 = Instantiate(enemyPrefab, UnityEngine.Random.insideUnitSphere, enemyPrefab.transform.rotation).gameObject;
+            Destroy(go11, 5f); GameObject go12 = Instantiate(enemyPrefab, UnityEngine.Random.insideUnitSphere, enemyPrefab.transform.rotation).gameObject;
+            Destroy(go12, 5f);
+        }
         if (Input.GetKeyDown(KeyCode.S))
         {
             if (hasBeenUndoed == true) clearList(currentplaceIntheList);
             commands.Add(button_S); currentplaceIntheList++;
             button_S.Execute(transform);
+            undoStack.Push(button_S);
             hasBeenUndoed = false;
         }
         if (Input.GetKeyDown(KeyCode.D))
@@ -111,6 +146,7 @@ public class badPlayer : MonoBehaviour
             if (hasBeenUndoed == true) clearList(currentplaceIntheList);
             button_D.Execute(transform);
             commands.Add(button_D);
+            undoStack.Push(button_D);
             currentplaceIntheList++;
             hasBeenUndoed = false;
         }
@@ -120,6 +156,7 @@ public class badPlayer : MonoBehaviour
             if (hasBeenUndoed == true) clearList(currentplaceIntheList);
             button_A.Execute(transform);
             commands.Add(button_A);
+            undoStack.Push(button_A);
             currentplaceIntheList++;
             hasBeenUndoed = false;
         }
@@ -128,6 +165,7 @@ public class badPlayer : MonoBehaviour
         {
             if (hasBeenUndoed == true) clearList(currentplaceIntheList);
             button_W.Execute(transform);
+            undoStack.Push(button_W);
             commands.Add(button_W); currentplaceIntheList++;
             hasBeenUndoed = false;
         }
@@ -136,12 +174,13 @@ public class badPlayer : MonoBehaviour
         {
             commands[currentplaceIntheList - 1].Undo(transform);
             currentplaceIntheList--;
+
             hasBeenUndoed = true;
 
         }
         if (commands.Count - 1 > currentplaceIntheList && Input.GetKeyDown(KeyCode.X))
         {
-
+            
             commands[currentplaceIntheList].Execute(transform);
             currentplaceIntheList += 1;
         }
