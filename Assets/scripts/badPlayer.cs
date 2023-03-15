@@ -5,6 +5,7 @@ using Unity.PlasticSCM.Editor.WebApi;
 using Unity.VisualScripting;
 using UnityEngine;
 
+
 public class badPlayer : MonoBehaviour
 {
     public float moveammount = 1;
@@ -30,6 +31,7 @@ public class badPlayer : MonoBehaviour
         public float moveammount { get { return m_moveammount; } }
         public abstract void Execute(Transform tf);
         public abstract void Undo(Transform tf);
+        
         
     }
     [Serializable]
