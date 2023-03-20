@@ -100,9 +100,9 @@ public class badPlayer : MonoBehaviour
     {
         startPos = transform.position;   
     }
-    void addToScore(enemy _enemy)
+    void addToScore(Pawn _enemy)
     {
-        this.Score += _enemy.enemyValue;
+        this.Score +=  _enemy.value;
         this.enemiesKilled++;
         Debug.Log("score added");
     }
