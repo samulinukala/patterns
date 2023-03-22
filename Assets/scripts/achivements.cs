@@ -13,7 +13,7 @@ public class achivements : MonoBehaviour
     {
         coin_collector,It_was_an_accident
     }
-    
+
     // Start is called before the first frame update
     void Start()
     {
@@ -22,15 +22,11 @@ public class achivements : MonoBehaviour
         coin.OnCoinGet += SetAchivementToTrueForCoin;
         enemy.OnEnemyDie += SetAchivementToTrueForEnemy;
     }
-    //olisin halunnut tehd‰ siten ett‰ olisin k‰ytt‰nyt vaan yht‰ metodia siihen ett‰ muutan listaa. 
-    //eli siten ett‰ metodi tarkistaa alaluokan ja laittaa siit‰ p‰‰ttelee mink‰ achivementin tyyppi‰ pit‰‰ muuttaa
-    // olisin ehk‰ voinut siirt‰‰ actionin pawn luokkaan ja se olisi voinut ratkaista ongelman
-    // jos tekisin vahinkoa useille eri vihollis tyypeille siirt‰isin sen sitten ehk‰ sinne ja siten saisin niist‰ pisteit‰ kaikista 
-    //en saanut edes linq hakua muuttamaan structin booleania trueksi joten muutin sen arrayksi
+   
     public void SetAchivementToTrueForCoin(Pawn pawn)
     {
         Debug.Log("coin get");
-        achivements_To_Get[0].achived=true;
+        achivements_To_Get[0].achived = true;
      
 
     }

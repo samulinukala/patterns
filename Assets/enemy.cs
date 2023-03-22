@@ -13,5 +13,6 @@ public class enemy : Pawn
         
 
         OnEnemyDie?.Invoke(this);
+        audioSingeleton.instance.playSouund2();
     }
 }

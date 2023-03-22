@@ -17,6 +17,7 @@ public class coin : Pawn
         { 
             gameObject.SetActive(false); 
             OnCoinGet?.Invoke(this); 
+            audioSingeleton.instance.PlaySound();
         }
 
     }
