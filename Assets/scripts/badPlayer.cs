@@ -14,7 +14,7 @@ public class badPlayer : MonoBehaviour
     private Command button_D = new moveRight();
     private float timerReplay = 0;
     public float timerReplayTarget=0.3f;
-    public bool isReplaying = false;
+   
     public int replayActionCount=0;
     [SerializeField]
     public List<Command> commands = new List<Command>();
@@ -23,35 +23,45 @@ public class badPlayer : MonoBehaviour
     private Vector3 startPos;
     public Stack<Command> undoStack = new Stack<Command>();
     public Stack<Command> redoStack = new Stack<Command>();
-    public enemy enemyPrefab;
+    private bool setSpawn = false;
+    public enum controlState
+    {
+        AI,
+        inert,
+        controlled,
+
+    }
+    public controlState controlstate;
     //score & enemies
     [SerializeField]
     private int Score = 0;
     [SerializeField]
     private int enemiesKilled = 0;
-    public int ammounttoSpawn=20;
-    public float radius1 = 20;
-    public float radius2 = 1;
-    public float lifeTime = 5;
-    public int ammounttoSpawn2;
-    private bool setSpawn=false;
-    public CinemachineFreeLook virtualCamera;
-    public Vector3 minPosition;
-    public Vector3 maxPosition;
 
+ 
+    public CinemachineFreeLook virtualCamera;
+
+ 
+  
     //Command Class
     [Serializable]
     public abstract class Command
     {
-        private float m_moveammount = 1.0f;
+        private float m_moveammount = 50;
         public float moveammount { get { return m_moveammount; } }
         public abstract void Execute(Transform tf);
         public abstract void Undo(Transform tf);
         
         
     }
-    
-    
+    public enum gamestate
+    {
+        playing,
+        paused,
+        replay,
+
+    }
+    public gamestate m_gamestate = gamestate.playing;
     [Serializable]
     public class moveForward : Command
     {
@@ -59,7 +69,7 @@ public class badPlayer : MonoBehaviour
         {
             Rigidbody rb = tf.gameObject.GetComponent<Rigidbody>();
             Vector3 oppositeDirection = -tf.forward;
-            rb.AddForce(oppositeDirection * moveammount, ForceMode.Impulse);
+            rb.AddForce(oppositeDirection * moveammount*Time.deltaTime, ForceMode.Impulse);
           //  tf.transform.Translate(Vector3.back * moveammount);
             //tf.gameObject.GetComponent<Rigidbody>().AddForce(-Vector3.back * moveammount,ForceMode.Impulse);
         }
@@ -67,7 +77,7 @@ public class badPlayer : MonoBehaviour
         {
             Rigidbody rb = tf.gameObject.GetComponent<Rigidbody>();
             Vector3 oppositeDirection = tf.forward;
-            rb.AddForce(oppositeDirection * moveammount, ForceMode.Impulse);
+            rb.AddForce(oppositeDirection * moveammount * Time.deltaTime, ForceMode.Impulse);
            // tf.gameObject.GetComponent<Rigidbody>().AddForce(Vector3.back * moveammount, ForceMode.Impulse);
         }
     }
@@ -78,15 +88,15 @@ public class badPlayer : MonoBehaviour
         {
              Rigidbody rb = tf.gameObject.GetComponent<Rigidbody>();
             Vector3 oppositeDirection = tf.forward;
-            rb.AddForce(oppositeDirection * moveammount, ForceMode.Impulse);
-            tf.gameObject.GetComponent<Rigidbody>().AddForce(Vector3.back * moveammount, ForceMode.Impulse);
+            rb.AddForce(oppositeDirection * moveammount * Time.deltaTime, ForceMode.Impulse);
+           // tf.gameObject.GetComponent<Rigidbody>().AddForce(Vector3.back * moveammount * Time.deltaTime, ForceMode.Impulse);
         }
         public override void Undo(Transform tf)
         {
             Rigidbody rb = tf.gameObject.GetComponent<Rigidbody>();
             Vector3 oppositeDirection = -tf.forward;
-            rb.AddForce(oppositeDirection * moveammount, ForceMode.Impulse);
-            tf.gameObject.GetComponent<Rigidbody>().AddForce(-Vector3.back * moveammount, ForceMode.Impulse);
+            rb.AddForce(oppositeDirection * moveammount * Time.deltaTime, ForceMode.Impulse);
+           // tf.gameObject.GetComponent<Rigidbody>().AddForce(-Vector3.back * moveammount * Time.deltaTime, ForceMode.Impulse);
         }
     }
     [Serializable]
@@ -95,11 +105,11 @@ public class badPlayer : MonoBehaviour
         public override void Execute(Transform tf)
         {
 
-            tf.gameObject.GetComponent<Rigidbody>().AddForce(-Vector3.left * moveammount, ForceMode.Impulse);
+            tf.gameObject.GetComponent<Rigidbody>().AddForce(tf.right * moveammount * Time.deltaTime, ForceMode.Impulse);
         }
         public override void Undo(Transform tf)
         {
-            tf.gameObject.GetComponent<Rigidbody>().AddForce(Vector3.left * moveammount, ForceMode.Impulse);
+            tf.gameObject.GetComponent<Rigidbody>().AddForce(tf.right * moveammount * Time.deltaTime, ForceMode.Impulse);
         }
     }
     [Serializable]
@@ -108,11 +118,11 @@ public class badPlayer : MonoBehaviour
         public override void Execute(Transform tf)
         {
 
-            tf.gameObject.GetComponent<Rigidbody>().AddForce(-Vector3.right * moveammount, ForceMode.Impulse);
+            tf.gameObject.GetComponent<Rigidbody>().AddForce(-tf.right * moveammount * Time.deltaTime, ForceMode.Impulse);
         }
         public override void Undo(Transform tf)
         {
-            tf.gameObject.GetComponent<Rigidbody>().AddForce(Vector3.right * moveammount, ForceMode.Impulse);
+            tf.gameObject.GetComponent<Rigidbody>().AddForce(-tf.right * moveammount * Time.deltaTime, ForceMode.Impulse);
            
         
         }
@@ -160,6 +170,7 @@ public class badPlayer : MonoBehaviour
             }
           
         }
+        
         if (Input.GetKey(KeyCode.S))
         {
             if (hasBeenUndoed == true) clearList(currentplaceIntheList);
@@ -196,8 +207,14 @@ public class badPlayer : MonoBehaviour
             commands.Add(button_W); currentplaceIntheList++;
             hasBeenUndoed = false;
         }
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            m_gamestate = gamestate.paused;
+            Time.timeScale = 0.0f;
+            Debug.Log("paused state");
+        }
 
-        if (commands.Count > 0 && Input.GetKeyDown(KeyCode.Z))
+        if (commands.Count > 0 && Input.GetKey(KeyCode.Z))
         {
             commands[currentplaceIntheList - 1].Undo(transform);
             currentplaceIntheList--;
@@ -214,81 +231,80 @@ public class badPlayer : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.R))
         {
             transform.position = startPos;
-            isReplaying = true;
+            m_gamestate=gamestate.replay;
+            Debug.Log("switch to replay mode");
         }
-
-    }
-    void spawn()
-    {
-        if (setSpawn == true)
+        // tämä vaihtaa ai tilaan
+        if(Input.GetKeyDown(KeyCode.T)) 
         {
-
-            for (int i = 0; i < ammounttoSpawn; i++)
-            {
-
-                int rand = UnityEngine.Random.Range(0, 4);
-                GameObject go = Instantiate(enemyPrefab,transform.position+UnityEngine.Random.insideUnitSphere * radius1, UnityEngine.Random.rotation).gameObject;
-
-                Vector3 randomPosition = new Vector3(
-                   UnityEngine.Random.Range(minPosition.x, maxPosition.x),
-                   UnityEngine.Random.Range(minPosition.y, maxPosition.y),
-                    UnityEngine.Random.Range(minPosition.z, maxPosition.z));
-
-                        go.GetComponent<Rigidbody>().AddForce(randomPosition, ForceMode.Impulse) ;
-                go.GetComponent<MeshRenderer>().material.color = UnityEngine.Random.ColorHSV();
-                Destroy(go, lifeTime);
-
-            }
-            for (int i = 0; i < ammounttoSpawn2; i++)
-            {
-               
-                GameObject go = Instantiate(enemyPrefab, transform.position + UnityEngine.Random.insideUnitSphere * radius2, UnityEngine.Random.rotation).gameObject;
-                go.GetComponent<MeshRenderer>().material.color = UnityEngine.Random.ColorHSV();
-                Vector3 randomPosition = new Vector3(
-                    UnityEngine.Random.Range(minPosition.x, maxPosition.x),
-                    UnityEngine.Random.Range(minPosition.y, maxPosition.y),
-                     UnityEngine.Random.Range(minPosition.z, maxPosition.z));
-
-                go.GetComponent<Rigidbody>().AddForce(randomPosition, ForceMode.Impulse);
-                Destroy(go, lifeTime);
-
-            }
+            controlstate = controlState.AI;
+            Debug.Log("now in ai mode");
         }
-    }
 
-    // Update is called once per frame
-    void Update()
+    }
+    void handlerotatioin()
     {
         Vector3 cameraPosition = virtualCamera.transform.position;
         cameraPosition.y = transform.position.y;
         transform.LookAt(cameraPosition);
+    }
 
-        if (isReplaying == false)
+
+    // Update is called once per frame
+    void Update()
+    {
+        if (controlstate == controlState.controlled)
         {
-            takeInput();
+            handlerotatioin();
+            FindObjectOfType<spawnner>().spawnBool = setSpawn;
+            if (m_gamestate == gamestate.playing)
+            {
+                takeInput();
+            }
+            else if (timerReplayTarget < timerReplay && m_gamestate == gamestate.replay)
+            {
+                Replay();
+                timerReplay = 0;
+            }
+            else if (m_gamestate == gamestate.playing)
+            {
+                timerReplay += Time.deltaTime;
+            }
+            else
+            if (m_gamestate == gamestate.paused)
+            {
+
+                if (Input.GetKeyDown(KeyCode.P) || Input.GetKeyDown(KeyCode.Escape))
+                {
+                    m_gamestate = gamestate.playing;
+                    Time.timeScale = 1.0f;
+                    Debug.Log("resume");
+                }
+            }
         }
-        else if(timerReplayTarget<timerReplay)
+        else if(controlstate==controlState.AI) 
         {
-            Replay();
-            timerReplay = 0;
+            if (Input.GetKeyDown(KeyCode.T))
+            {
+                controlstate = controlState.controlled;
+            }
+            // tässä pitäisi olla metodit ai liikkumiseen ja muuhun sellaiseen
+            Debug.Log("now in player mode");
         }
-        else
-        {
-            timerReplay += Time.deltaTime;
-        }
-        spawn();
     }
 
     private void Replay()
     {
         if (replayActionCount < currentplaceIntheList)
         {
+            m_gamestate = gamestate.replay;
             commands[replayActionCount].Execute(transform);
             replayActionCount++;
         }
         else
         {
-            isReplaying= false;
+            m_gamestate=gamestate.playing;
+            Debug.Log("replay over switching to player mode");
         }
     }
 }
