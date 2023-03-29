@@ -35,7 +35,7 @@ public class controlManager : MonoBehaviour
         
         for (int i = 0; i < players.Count; i++)
         {
-            Debug.Log("control switched from: "+previous_player+" to: "+currentPlayer)
+            Debug.Log("control switched from: " + previous_player + " to: " + currentPlayer);
             if(i== previous_player)
             {
                 players[i].controlstate = badPlayer.controlState.inert;
