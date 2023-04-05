@@ -47,7 +47,7 @@ public class badPlayer : MonoBehaviour
     [Serializable]
     public abstract class Command
     {
-        private float m_moveammount = 50;
+        private float m_moveammount = 300;
         public float moveammount { get { return m_moveammount; } }
         public abstract void Execute(Transform tf);
         public abstract void Undo(Transform tf);
