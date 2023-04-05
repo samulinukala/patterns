@@ -250,9 +250,7 @@ public class chadPlayer : MonoBehaviour
         transform.LookAt(cameraPosition);
     }
 
-
-    // Update is called once per frame
-    void Update()
+    void handleStates()
     {
         if (controlstate == controlState.controlled)
         {
@@ -292,6 +290,11 @@ public class chadPlayer : MonoBehaviour
             // tässä pitäisi olla metodit ai liikkumiseen ja muuhun sellaiseen
             Debug.Log("now in player mode");
         }
+    }
+    // Update is called once per frame
+    void Update()
+    {
+        handleStates();
     }
 
     private void Replay()
